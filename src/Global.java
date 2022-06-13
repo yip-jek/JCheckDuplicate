@@ -1,7 +1,11 @@
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+// Tool class
 public class Global {
+    private Global() {
+    }
+
     public static final String YYYY_MM_DD_HH_MI_SS = "yyyy-MM-dd HH:mm:ss";
     public static final String YYYYMMDDHHMISS = "yyyyMMddHHmmss";
 
