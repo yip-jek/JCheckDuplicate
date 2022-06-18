@@ -57,7 +57,11 @@ public class Log {
     }
 
     public static void justPrint(String msg) {
-        System.out.println(msg);
+        if (Global.isEmpty(msg)) {
+            System.out.println();
+        } else {
+            System.out.println(msg);
+        }
     }
 
     private Log() {

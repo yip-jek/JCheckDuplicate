@@ -17,4 +17,12 @@ public class Global {
     public static String currentDateTimeString() {
         return currentDateTimeFormat(YYYY_MM_DD_HH_MI_SS);
     }
+
+    public static boolean isEmpty(String str) {
+        return (str == null || str.isEmpty());
+    }
+
+    public static boolean notEmpty(String str) {
+        return !isEmpty(str);
+    }
 }
