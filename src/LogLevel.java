@@ -5,26 +5,26 @@ public enum LogLevel {
     WARN(3, "WARN"),
     ERROR(4, "ERROR");
 
-    private final int index;
-    private final String level;
+    private final int level;
+    private final String levelDesc;
 
-    private LogLevel(int index, String level) {
-        this.index = index;
+    private LogLevel(int level, String desc) {
         this.level = level;
+        this.levelDesc = desc;
     }
 
-    public int getIndex() {
-        return index;
-    }
-
-    public String getLevel() {
+    public int getLevel() {
         return level;
     }
 
-    public static LogLevel indexOf(int index) {
+    public String getLevelDesc() {
+        return levelDesc;
+    }
+
+    public static LogLevel levelOf(int level) {
         LogLevel[] levels = LogLevel.values();
-        if (index >= 0 && index < levels.length) {
-            return levels[index];
+        if (level >= 0 && level < levels.length) {
+            return levels[level];
         }
 
         return null;

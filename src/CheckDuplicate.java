@@ -1,21 +1,16 @@
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.security.MessageDigest;
-import java.util.HexFormat;
 
 public class CheckDuplicate {
     private static final Log log = Log.getInstance();
-    private static final String SHA256 = "SHA-256";
-    private static final int BLOCK_SIZE = 4096;
     private final String path;
     private final String outFile;
+    private final LoadMode loadMode;
 
-    public CheckDuplicate(String path, String outFile) throws Exception {
+    public CheckDuplicate(String path, String outFile, String mode) throws Exception {
         String nPath = path.trim();
         if (nPath != null) {
             this.path = nPath;
-            log.info("The path is: ["+this.path+"]");
+            log.info(String.format("The path is: [%s]", this.path));
         } else {
             throw new Exception("The path is blank!");
         }
@@ -23,88 +18,58 @@ public class CheckDuplicate {
         String nOutFile = outFile.trim();
         if (nOutFile != null) {
             this.outFile = nOutFile;
-            log.info("The outFile is: ["+this.outFile+"]");
+            log.info(String.format("The outFile is: [%s]", this.outFile));
         } else {
             throw new Exception("The outFile is blank!");
         }
+
+        this.loadMode = LoadMode.modeOf(mode.toUpperCase());
+        if (this.loadMode == null) {
+            throw new Exception(String.format("Unknown load mode: [%s]", mode));
+        }
+        log.info(String.format("The load mode is: [%s]", this.loadMode.getMode()));
     }
 
-    public void DoCheck() throws Exception {
+    public void doCheck() throws Exception {
         log.notice("Check: >>>>> BEGIN:");
 
-        loadFile();
+        CheckSumFile checkSum = new CheckSumFile(outFile, loadMode, DigestType.SHA256);
+        checkSum.loadFile();
 
-        scanPath();
+        scanPath(checkSum);
 
-        writeFile();
+        checkSum.writeFile();
 
         log.notice("Check: >>>>> END!");
     }
 
-    private void loadFile() {
-        log.info("Loading file: "+outFile);
-    }
-
-    private void scanPath() throws Exception {
+    private void scanPath(CheckSumFile checkSum) throws Exception {
         log.info("Scanning path: "+path);
 
         File pathFile = new File(path);
         if (!pathFile.isDirectory()) {
             throw new Exception("The path is NOT directory: "+path);
         }
-        log.notice("The absolute path is: ["+pathFile.getAbsolutePath()+"]");
+        log.notice(String.format("The absolute path is: [%s]", pathFile.getAbsolutePath()));
 
-        File[] fileList = pathFile.listFiles();
-        if (fileList.length > 0) {
-            for (File file : fileList) {
-                scanSubPathFile(file);
-            }
-        } else {
-            log.warn("The path directory is EMPTY!");
-        }
+        scanSubPathFile(checkSum, pathFile);
     }
 
-    private void scanSubPathFile(File file) throws Exception {
+    private void scanSubPathFile(CheckSumFile checkSum, File file) throws Exception {
         if (file.isDirectory()) {
-            log.info("{DIR} : ["+file.getAbsolutePath()+"]");
+            log.info(String.format("{DIR} : [%s]", file.getAbsolutePath()));
 
             File[] fileList = file.listFiles();
             if (fileList.length > 0) {
                 for (File subFile : fileList) {
-                    scanSubPathFile(subFile);
+                    scanSubPathFile(checkSum, subFile);
                 }
             } else {
                 log.warn("The directory is EMPTY!");
             }
         } else {
-            log.info("<FILE> : ["+file.getAbsolutePath()+"]");
-            SHA256Hash(file);
+            log.info(String.format("<FILE> : [%s]", file.getAbsolutePath()));
+            checkSum.checkSum(file);
         }
-    }
-
-    private void SHA256Hash(File file) throws Exception {
-        if (file.length() > 0L) {
-            InputStream input = new FileInputStream(file);
-            MessageDigest digest = MessageDigest.getInstance(SHA256);
-            byte[] block = new byte[BLOCK_SIZE];
-
-            int len = 0;
-            while ((len = input.read(block)) > 0) {
-                digest.update(block, 0, len);
-            }
-            input.close();
-
-            HexFormat hex = HexFormat.of();
-            StringBuffer strBuf = new StringBuffer("File: ");
-            strBuf.append(file.getName()).append(", ").append(SHA256).append("=");
-            strBuf.append(hex.formatHex(digest.digest()));
-            log.notice(strBuf.toString());
-        } else {
-            log.warn("The file is EMPTY!");
-        }
-    }
-
-    private void writeFile() {
-        log.info("Writing file: "+outFile);
     }
 }

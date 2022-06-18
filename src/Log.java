@@ -68,7 +68,7 @@ public class Log {
         strBuf.append(" ").append(level).append(" ").append(msg);
 
         justPrint(strBuf.toString());
-        if (LOG_WRITER != null && level.getIndex() >= LOG_LEVEL.getIndex()) {
+        if (LOG_WRITER != null && level.getLevel() >= LOG_LEVEL.getLevel()) {
             try {
                 strBuf.append("\n");
                 LOG_WRITER.write(strBuf.toString());
